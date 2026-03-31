@@ -1,0 +1,11 @@
+streamlit
+python-docx
+docx2pdf
+fpdf2
+requests
+python-dotenv
+pypdf
+pyyaml
+fastapi
+uvicorn
+python-multipart

@@ -1,0 +1,29 @@
+# Secrets
+.env
+
+# Config with personal info
+config.yaml
+
+# Output files
+output/
+
+# LinkedIn PDF (personal)
+data/linkedin_profile.pdf
+data/master_resume.txt
+
+# Python
+__pycache__/
+*.pyc
+RESUMEBOT/
+*.egg-info/
+.venv/
+venv/
+frontend/node_modules/
+frontend/dist/
+# VS Code
+.vscode/
+# Root level
+node_modules/
+package.json
+package-lock.json
+*.exe

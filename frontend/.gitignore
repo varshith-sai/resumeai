@@ -1,0 +1,33 @@
+# Secrets
+.env
+
+# Personal config
+config.yaml
+
+# Output files
+output/
+
+# Personal data
+data/linkedin_profile.pdf
+data/master_resume.txt
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+RESUMEBOT/
+venv/
+.venv/
+*.egg-info/
+
+# VS Code
+.vscode/
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
