@@ -1,0 +1,28 @@
+# ── Core API & Web ──
+fastapi==0.115.6
+uvicorn[standard]==0.32.1
+python-multipart==0.0.20
+
+# ── Resume & PDF Generation ──
+python-docx==1.1.2
+docx2pdf==0.1.8
+fpdf2==2.8.1
+
+# ── AI & LLM ──
+openai==1.58.1
+
+# ── GitHub & HTTP ──
+requests==2.32.3
+
+# ── Environment & Config ──
+python-dotenv==1.0.1
+pyyaml==6.0.2
+
+# ── LinkedIn PDF Parsing ──
+pypdf==5.1.0
+
+# ── Streamlit (legacy UI) ──
+streamlit==1.41.1
+
+# ── Windows only: COM for DOCX to PDF ──
+pywin32==308

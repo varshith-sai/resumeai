@@ -193,7 +193,12 @@ JOB DESCRIPTION:
         docx_path = f"output/{safe_name}.docx"
         pdf_path = f"output/{safe_name}.pdf"
 
-        build_resume(data, docx_path)
+        template_path = "data/resume_template.docx"
+        if os.path.exists(template_path):
+            from utils.template_parser import build_resume_from_template
+            build_resume_from_template(data, docx_path, template_path)
+        else:
+            build_resume(data, docx_path)
 
         import subprocess
         import platform

@@ -23,6 +23,7 @@ export default function Setup({ onComplete }) {
   const [showGithub, setShowGithub] = useState(false)
   const [masterResumeText, setMasterResumeText] = useState("")
   const [linkedinFile, setLinkedinFile] = useState(null)
+  const [resumeTemplateFile, setResumeTemplateFile] = useState(null)
   const [uploading, setUploading] = useState(false)
 
   // Phone: format only on blur, type freely
@@ -79,6 +80,7 @@ export default function Setup({ onComplete }) {
     formData.append("github_token", tokens.github)
     formData.append("master_resume_text", masterResumeText)
     if (linkedinFile) formData.append("linkedin_file", linkedinFile)
+    if (resumeTemplateFile) formData.append("resume_template_file", resumeTemplateFile)
 
     try {
       const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
@@ -161,7 +163,6 @@ export default function Setup({ onComplete }) {
                 <h2 className="text-base font-semibold text-gray-200 mb-4">Personal Information</h2>
                 <div className="space-y-3">
 
-                  {/* Name */}
                   <input
                     className={inputClass}
                     placeholder="Full Name *"
@@ -169,7 +170,6 @@ export default function Setup({ onComplete }) {
                     onBlur={(e) => setPersonal(prev => ({ ...prev, name: e.target.value }))}
                   />
 
-                  {/* Email */}
                   <input
                     className={inputClass}
                     placeholder="Email *"
@@ -177,7 +177,6 @@ export default function Setup({ onComplete }) {
                     onBlur={(e) => setPersonal(prev => ({ ...prev, email: e.target.value }))}
                   />
 
-                  {/* Phone — uncontrolled, format on blur */}
                   <input
                     className={inputClass}
                     placeholder="+1 (000) 000-0000"
@@ -186,7 +185,6 @@ export default function Setup({ onComplete }) {
                     onBlur={handlePhoneBlur}
                   />
 
-                  {/* Location */}
                   <input
                     className={inputClass}
                     placeholder="Location e.g. New York, NY"
@@ -194,7 +192,6 @@ export default function Setup({ onComplete }) {
                     onBlur={(e) => setPersonal(prev => ({ ...prev, location: e.target.value }))}
                   />
 
-                  {/* LinkedIn */}
                   <input
                     className={inputClass}
                     placeholder="LinkedIn URL e.g. https://linkedin.com/in/username"
@@ -202,7 +199,6 @@ export default function Setup({ onComplete }) {
                     onBlur={(e) => setPersonal(prev => ({ ...prev, linkedin: e.target.value }))}
                   />
 
-                  {/* GitHub — uncontrolled, extract username on blur */}
                   <input
                     className={inputClass}
                     placeholder="GitHub URL e.g. https://github.com/username"
@@ -358,6 +354,7 @@ export default function Setup({ onComplete }) {
               >
                 <h2 className="text-base font-semibold text-gray-200 mb-4">Resume & Files</h2>
 
+                {/* Master Resume Text */}
                 <div className="mb-4">
                   <label className="text-xs text-gray-400 font-medium block mb-1.5">
                     Master Resume * (paste your full resume text)
@@ -366,23 +363,69 @@ export default function Setup({ onComplete }) {
                     placeholder="Paste your full resume here — experience, skills, projects, awards..."
                     value={masterResumeText}
                     onChange={(e) => setMasterResumeText(e.target.value)}
-                    rows={7}
+                    rows={5}
                     className={inputClass + " resize-none"}
                   />
                 </div>
 
+                {/* Resume Template DOCX Upload */}
+                <div className="mb-4">
+                  <label className="text-xs text-gray-400 font-medium block mb-1.5">
+                    Your Resume Template (optional)
+                  </label>
+                  <label
+                    className="flex items-center gap-3 p-3 rounded-xl cursor-pointer"
+                    style={{
+                      background: "#0d0d1a",
+                      border: resumeTemplateFile ? "1px dashed #6c63ff" : "1px dashed #2a2a4a"
+                    }}
+                  >
+                    <Upload size={16} color="#6c63ff" />
+                    <div className="flex-1">
+                      <p className="text-sm" style={{ color: resumeTemplateFile ? "#6c63ff" : "#666" }}>
+                        {resumeTemplateFile ? resumeTemplateFile.name : "Upload your existing DOCX resume"}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        We'll copy your exact fonts, colors, spacing and layout
+                      </p>
+                    </div>
+                    {resumeTemplateFile && <Check size={16} color="#6c63ff" />}
+                    <input
+                      type="file"
+                      accept=".docx"
+                      className="hidden"
+                      onChange={(e) => setResumeTemplateFile(e.target.files[0])}
+                    />
+                  </label>
+                  <p className="text-xs mt-1 pl-1" style={{ color: resumeTemplateFile ? "#6c63ff" : "#555" }}>
+                    {resumeTemplateFile
+                      ? "✓ Template uploaded — your resume style will be matched exactly"
+                      : "If skipped, a clean default style will be used"}
+                  </p>
+                </div>
+
+                {/* LinkedIn PDF Upload */}
                 <div>
                   <label className="text-xs text-gray-400 font-medium block mb-1.5">
                     LinkedIn Profile PDF (optional)
                   </label>
                   <label
                     className="flex items-center gap-3 p-3 rounded-xl cursor-pointer"
-                    style={{ background: "#0d0d1a", border: "1px dashed #2a2a4a" }}
+                    style={{
+                      background: "#0d0d1a",
+                      border: linkedinFile ? "1px dashed #6c63ff" : "1px dashed #2a2a4a"
+                    }}
                   >
                     <Upload size={16} color="#6c63ff" />
-                    <span className="text-sm text-gray-500">
-                      {linkedinFile ? linkedinFile.name : "Upload LinkedIn PDF"}
-                    </span>
+                    <div className="flex-1">
+                      <p className="text-sm" style={{ color: linkedinFile ? "#6c63ff" : "#666" }}>
+                        {linkedinFile ? linkedinFile.name : "Upload LinkedIn PDF"}
+                      </p>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        Imports your certifications and courses automatically
+                      </p>
+                    </div>
+                    {linkedinFile && <Check size={16} color="#6c63ff" />}
                     <input
                       type="file"
                       accept=".pdf"
@@ -390,8 +433,11 @@ export default function Setup({ onComplete }) {
                       onChange={(e) => setLinkedinFile(e.target.files[0])}
                     />
                   </label>
-                  <p className="text-xs text-gray-600 mt-1">LinkedIn → More → Save to PDF</p>
+                  <p className="text-xs text-gray-600 mt-1 pl-1">
+                    LinkedIn → More → Save to PDF
+                  </p>
                 </div>
+
               </motion.div>
             )}
 

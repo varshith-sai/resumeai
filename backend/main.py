@@ -8,7 +8,6 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from typing import List, Optional
 import json
-import shutil
 from utils.generator import generate_resume
 
 app = FastAPI()
@@ -43,6 +42,7 @@ async def setup(
     master_resume_text: str = Form(""),
     master_resume_file: Optional[UploadFile] = File(None),
     linkedin_file: Optional[UploadFile] = File(None),
+    resume_template_file: Optional[UploadFile] = File(None),
 ):
     personal_data = json.loads(personal)
     education_data = json.loads(education)
@@ -55,30 +55,41 @@ async def setup(
     }
     with open("config.yaml", "w") as f:
         yaml.dump(config, f)
+    print("✅ config.yaml saved")
 
     # Save master resume
     os.makedirs("data", exist_ok=True)
     if master_resume_text.strip():
         with open("data/master_resume.txt", "w", encoding="utf-8") as f:
             f.write(master_resume_text)
+        print("✅ master_resume.txt saved from text")
     elif master_resume_file:
         contents = await master_resume_file.read()
         with open("data/master_resume.txt", "wb") as f:
             f.write(contents)
+        print("✅ master_resume.txt saved from file")
 
-    # Save LinkedIn PDF
+    # Save resume template DOCX (user's own resume for style matching)
+    if resume_template_file:
+        contents = await resume_template_file.read()
+        with open("data/resume_template.docx", "wb") as f:
+            f.write(contents)
+        print("✅ resume_template.docx saved — styles will be extracted from this")
+
+    # Save LinkedIn PDF and run parser
     if linkedin_file:
         contents = await linkedin_file.read()
         with open("data/linkedin_profile.pdf", "wb") as f:
             f.write(contents)
-        # Run LinkedIn parser
+        print("✅ linkedin_profile.pdf saved")
         try:
             from utils.linkedin_parser import run_linkedin_import
             run_linkedin_import()
+            print("✅ LinkedIn data imported")
         except Exception as e:
-            print(f"LinkedIn import failed: {e}")
+            print(f"⚠️ LinkedIn import failed: {e}")
 
-    # Update env tokens
+    # Update env tokens so generator uses them immediately
     if hf_token:
         os.environ["HF_API_TOKEN"] = hf_token
     if github_token:
