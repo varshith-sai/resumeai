@@ -197,8 +197,12 @@ JOB DESCRIPTION:
 
         template_path = "data/resume_template.docx"
         if os.path.exists(template_path):
-            from utils.template_parser import build_resume_from_template
-            build_resume_from_template(data, docx_path, template_path)
+            try:
+                from utils.template_parser import build_resume_from_template
+                build_resume_from_template(data, docx_path, template_path)
+            except Exception:
+                # Fallback when template parser module is unavailable.
+                build_resume(data, docx_path)
         else:
             build_resume(data, docx_path)
 
