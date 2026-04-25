@@ -6,8 +6,8 @@ import Hero from "./components/Hero"
 import JobCard from "./components/JobCard"
 import ResultCard from "./components/ResultCard"
 import Loader from "./components/Loader"
-import SettingsPanel from "./components/Settings"
-import Setup from "./components/Setup"
+import SettingsPanel from "./components/settings"
+import Setup from "./components/setup"
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
 
