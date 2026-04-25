@@ -24,6 +24,4 @@ frontend/dist/
 .vscode/
 # Root level
 node_modules/
-package.json
-package-lock.json
 *.exe

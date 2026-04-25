@@ -1,12 +1,14 @@
 import os
 import re
 import json
+import shutil
+import subprocess
 from utils.llm import call_llm
 from utils.github import get_github_projects
 from utils.scorer import score_resume
 from utils.resume_builder import build_resume
 from utils.cover_letter import generate_cover_letter
-from utils.config import personal, education
+from utils.config import personal, education, reload_config
 
 
 def load_file(path):
@@ -14,24 +16,12 @@ def load_file(path):
         return f.read()
 
 
-# Load master resume and GitHub projects once
-try:
-    master_resume = load_file("data/master_resume.txt")
-    print("✅ master_resume loaded")
-except Exception as e:
-    print(f"❌ Could not load master_resume.txt: {e}")
-    master_resume = ""
-
-try:
-    github_projects = get_github_projects()
-    github_text = "\n".join([
-        f"- {p['name']}: {p['description']} (Languages: {', '.join(p['languages'])})"
-        for p in github_projects
-    ])
-    print("✅ GitHub projects loaded")
-except Exception as e:
-    print(f"❌ Could not fetch GitHub projects: {e}")
-    github_text = ""
+def _libreoffice_executable():
+    for name in ("libreoffice", "soffice"):
+        path = shutil.which(name)
+        if path:
+            return path
+    return None
 
 
 def select_relevant_projects(github_projects, job_description):
@@ -69,6 +59,18 @@ def generate_resume(job_description, job_name="job"):
     Returns: (pdf_path, docx_path, score, cover_letter_path, error)
     """
     try:
+        reload_config()
+        try:
+            master_resume = load_file("data/master_resume.txt")
+        except Exception as e:
+            return None, None, None, None, f"❌ Could not load master_resume.txt: {e}"
+
+        try:
+            github_projects = get_github_projects()
+        except Exception as e:
+            print(f"❌ Could not fetch GitHub projects: {e}")
+            github_projects = []
+
         # ── STEP 1: Generate resume JSON from LLM ──
         import json as _json
         education_json = _json.dumps(education, indent=2)
@@ -200,7 +202,6 @@ JOB DESCRIPTION:
         else:
             build_resume(data, docx_path)
 
-        import subprocess
         import platform
 
         if platform.system() == "Windows":
@@ -212,11 +213,17 @@ JOB DESCRIPTION:
             finally:
                 pythoncom.CoUninitialize()
         else:
-            # Linux (for deployment)
+            libreoffice_bin = _libreoffice_executable()
+            if not libreoffice_bin:
+                return None, None, None, None, (
+                    "❌ LibreOffice not found. Install LibreOffice on the server "
+                    "or deploy with the provided Dockerfile."
+                )
             subprocess.run([
-                "libreoffice", "--headless", "--convert-to", "pdf",
-                "--outdir", os.path.dirname(pdf_path), docx_path
-            ], check=True)
+                libreoffice_bin, "--headless", "--convert-to", "pdf",
+                "--outdir", os.path.dirname(os.path.abspath(pdf_path)),
+                os.path.abspath(docx_path),
+            ], check=True, timeout=120)
 
         # ── STEP 5: Generate Cover Letter ──
         cover_letter_path = generate_cover_letter(job_description, job_name)

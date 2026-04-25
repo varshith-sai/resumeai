@@ -71,6 +71,12 @@ export default function App() {
       }
     } catch (err) {
       console.error("Generation failed:", err)
+      const detail =
+        err?.response?.data?.detail ??
+        err?.response?.data?.message ??
+        err?.message ??
+        "Request failed"
+      alert(typeof detail === "string" ? detail : JSON.stringify(detail))
     } finally {
       setLoading(false)
       setCurrentJob("")

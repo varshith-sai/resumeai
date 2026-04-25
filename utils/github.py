@@ -4,19 +4,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
 from utils.config import personal
-GITHUB_USERNAME = personal["github_username"]
 
-headers = {
-    "Authorization": f"token {GITHUB_TOKEN}",
-    "Accept": "application/vnd.github.v3+json"
-}
+def _headers():
+    token = os.getenv("GITHUB_TOKEN") or ""
+    headers = {"Accept": "application/vnd.github.v3+json"}
+    if token:
+        headers["Authorization"] = f"token {token}"
+    return headers
 
 def get_readme(repo_name):
     """Try to fetch README content as fallback description"""
-    url = f"https://api.github.com/repos/{GITHUB_USERNAME}/{repo_name}/readme"
-    response = requests.get(url, headers=headers)
+    github_username = personal.get("github_username") or ""
+    if not github_username:
+        return "No description available"
+    url = f"https://api.github.com/repos/{github_username}/{repo_name}/readme"
+    response = requests.get(url, headers=_headers())
     if response.status_code == 200:
         import base64
         content = base64.b64decode(response.json()["content"]).decode("utf-8", errors="ignore")
@@ -29,8 +32,13 @@ def get_readme(repo_name):
 
 def get_github_projects():
     """Fetch all public repos with name, description, and languages"""
-    url = f"https://api.github.com/users/{GITHUB_USERNAME}/repos"
-    response = requests.get(url, headers=headers)
+    github_username = personal.get("github_username") or ""
+    if not github_username:
+        print("⚠️ GitHub username missing in config")
+        return []
+
+    url = f"https://api.github.com/users/{github_username}/repos"
+    response = requests.get(url, headers=_headers())
 
     if response.status_code != 200:
         print("❌ GitHub API error:", response.status_code, response.text)
@@ -51,7 +59,7 @@ def get_github_projects():
 
         # Get languages
         lang_url = repo["languages_url"]
-        lang_response = requests.get(lang_url, headers=headers)
+        lang_response = requests.get(lang_url, headers=_headers())
         languages = list(lang_response.json().keys()) if lang_response.status_code == 200 else []
 
         # Skip repos with no languages and no description

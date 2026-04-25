@@ -283,7 +283,8 @@ export default function Setup({ onComplete }) {
               >
                 <h2 className="text-base font-semibold text-gray-200 mb-1">API Tokens</h2>
                 <p className="text-xs text-gray-500 mb-4">
-                  Stored locally in your browser only. Never shared.
+                  Saved in your browser (localStorage). Sent to the API only over HTTPS
+                  when you run setup or generate.
                 </p>
 
                 {/* HF Token */}

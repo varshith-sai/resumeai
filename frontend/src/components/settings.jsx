@@ -97,7 +97,7 @@ export default function SettingsPanel({ tokens, onSave }) {
               </div>
 
               <p className="text-xs text-gray-600 mb-4">
-                Tokens are stored locally in your browser only.
+                Tokens stay in your browser and are sent only when needed for API calls.
               </p>
 
               <motion.button

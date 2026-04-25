@@ -99,6 +99,35 @@ Complete the setup wizard — add your resume, tokens, and LinkedIn PDF. Done! �
 
 ---
 
+## 🌐 Deploying Online (BYOK)
+
+This project supports **BYOK** (Bring Your Own Keys): each user enters their own Hugging Face and GitHub tokens in the UI.
+
+### Backend (Render)
+
+This repo includes a `Dockerfile` with LibreOffice so DOCX to PDF conversion works on Linux hosts.
+
+1. Push this repo to GitHub.
+2. In Render, create a service from `render.yaml` (Blueprint) or choose Docker and point to root `Dockerfile`.
+3. Set `CORS_ORIGINS` to your frontend URL (example: `https://your-app.vercel.app`).
+4. Optional: set `MAX_UPLOAD_BYTES` if you want a different upload size limit.
+
+### Frontend (Vercel)
+
+1. Deploy the `frontend` folder.
+2. Set env var `VITE_API_URL` to your backend URL (example: `https://resumeai-backend.onrender.com`).
+3. Redeploy after setting env vars.
+
+### Security and behavior notes
+
+- API keys are entered by users and sent only when needed.
+- Keys are not committed to git.
+- Backend now has rate limits and upload-size limits.
+- Download endpoint only serves generated PDF files from `output/`.
+- On free hosting plans, server disk may be temporary; users may need to run setup again after a restart.
+
+---
+
 ## 🗂️ Project Structure
 
 ```
