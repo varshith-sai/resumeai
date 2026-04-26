@@ -53,6 +53,29 @@ def select_relevant_projects(github_projects, job_description):
     ])
 
 
+def _normalize_education_entries(items):
+    normalized = []
+    school_aliases = {
+        "CSULB": "California State University, Long Beach",
+    }
+    for edu in items or []:
+        row = dict(edu)
+        school = str(row.get("school", "")).strip()
+        if school in school_aliases:
+            row["school"] = school_aliases[school]
+        normalized.append(row)
+    return normalized
+
+
+def _enforce_fixed_profile_fields(data):
+    # Keep user profile fields exactly from config, regardless of LLM output.
+    for key in ("name", "phone", "email", "location", "linkedin", "github"):
+        if key in personal:
+            data[key] = personal.get(key, "")
+    data["education"] = _normalize_education_entries(education)
+    return data
+
+
 def generate_resume(job_description, job_name="job"):
     """
     Full pipeline: JD → JSON → DOCX → PDF → ATS score → Cover Letter
@@ -157,6 +180,7 @@ Return this exact JSON structure:
         try:
             json_match = re.search(r'\{.*\}', result, re.DOTALL)
             data = json.loads(json_match.group())
+            data = _enforce_fixed_profile_fields(data)
         except Exception as e:
             return None, None, None, None, f"❌ Failed to parse JSON: {e}"
 
@@ -185,6 +209,7 @@ JOB DESCRIPTION:
             try:
                 json_match2 = re.search(r'\{.*\}', result2, re.DOTALL)
                 data = json.loads(json_match2.group())
+                data = _enforce_fixed_profile_fields(data)
                 score = score_resume(job_description, data)
             except Exception:
                 pass
