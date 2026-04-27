@@ -22,6 +22,23 @@ def build_resume(data, output_path="output/resume.docx"):
         if color:
             run.font.color.rgb = RGBColor(*color)
 
+    def clean_text(value):
+        return str(value).strip() if value is not None else ""
+
+    def format_gpa(gpa_value):
+        gpa_text = clean_text(gpa_value)
+        if not gpa_text:
+            return ""
+        if gpa_text.lower().startswith("gpa"):
+            return gpa_text
+        try:
+            num = float(gpa_text)
+            if 0 <= num <= 4.0:
+                return f"GPA: {num:.1f}/4.0"
+        except ValueError:
+            pass
+        return f"GPA: {gpa_text}"
+
     def add_section_header(doc, title):
         p = doc.add_paragraph()
         p.paragraph_format.space_before = Pt(3)
@@ -76,12 +93,28 @@ def build_resume(data, output_path="output/resume.docx"):
     contact_p = doc.add_paragraph()
     contact_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
     contact_p.paragraph_format.space_after = Pt(4)
-    r1 = contact_p.add_run(f"{data['phone']} ǀ {data['email']} ǀ {data['location']} ǀ ")
-    set_font(r1, 10)
-    add_hyperlink(contact_p, "LinkedIn", data['linkedin'])
-    r2 = contact_p.add_run(" | ")
-    set_font(r2, 10)
-    add_hyperlink(contact_p, "Github", data['github'])
+    contact_parts = []
+    for key in ("phone", "email", "location"):
+        value = clean_text(data.get(key))
+        if value:
+            contact_parts.append(value)
+    if contact_parts:
+        r1 = contact_p.add_run(" | ".join(contact_parts))
+        set_font(r1, 10)
+
+    has_linkedin = bool(clean_text(data.get("linkedin")))
+    has_github = bool(clean_text(data.get("github")))
+    if has_linkedin or has_github:
+        if contact_parts:
+            sep = contact_p.add_run(" | ")
+            set_font(sep, 10)
+        if has_linkedin:
+            add_hyperlink(contact_p, "LinkedIn", data["linkedin"])
+        if has_github:
+            if has_linkedin:
+                mid = contact_p.add_run(" | ")
+                set_font(mid, 10)
+            add_hyperlink(contact_p, "GitHub", data["github"])
 
     # ── PROFESSIONAL SUMMARY ──
     add_section_header(doc, "Professional Summary")
@@ -120,7 +153,7 @@ def build_resume(data, output_path="output/resume.docx"):
             add_bullet(doc, bullet)
 
     # ── ACADEMIC PROJECTS ──
-    add_section_header(doc, "Academic Project")
+    add_section_header(doc, "Academic Projects")
     for proj in data['projects']:
         p = doc.add_paragraph()
         p.paragraph_format.space_before = Pt(4)
@@ -150,8 +183,9 @@ def build_resume(data, output_path="output/resume.docx"):
         p2.paragraph_format.space_after = Pt(0)
         school_run = p2.add_run(edu['school'])
         set_font(school_run, 10)
-        if 'gpa' in edu:
-            gpa_run = p2.add_run(f"  {edu['gpa']}")
+        gpa_value = format_gpa(edu.get("gpa"))
+        if gpa_value:
+            gpa_run = p2.add_run(f"  |  {gpa_value}")
             set_font(gpa_run, 10)
 
     os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else "output", exist_ok=True)

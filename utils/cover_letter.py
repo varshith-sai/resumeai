@@ -7,6 +7,9 @@ from utils.config import personal
 
 def generate_cover_letter(job_description, job_name="job", master_resume_path="data/master_resume.txt"):
     try:
+        def clean_text(value):
+            return str(value).strip() if value is not None else ""
+
         with open(master_resume_path, "r", encoding="utf-8") as f:
             master_resume = f.read()
 
@@ -56,10 +59,23 @@ RULES:
 
         # ── SENDER INFO ──
         pdf.set_font("Helvetica", "B", 13)
-        pdf.cell(w, 8, personal['name'], ln=True)
+        pdf.cell(w, 8, clean_text(personal.get("name")) or "Candidate Name", ln=True)
         pdf.set_font("Helvetica", "", 10)
-        pdf.cell(w, 6, f"{personal['location']}  |  {personal['phone']}  |  {personal['email']}", ln=True)
-        pdf.cell(w, 6, f"{personal['linkedin']}  |  {personal['github']}", ln=True)
+        contact_line_1 = []
+        for key in ("location", "phone", "email"):
+            value = clean_text(personal.get(key))
+            if value:
+                contact_line_1.append(value)
+        if contact_line_1:
+            pdf.cell(w, 6, "  |  ".join(contact_line_1), ln=True)
+
+        contact_line_2 = []
+        for key in ("linkedin", "github"):
+            value = clean_text(personal.get(key))
+            if value:
+                contact_line_2.append(value)
+        if contact_line_2:
+            pdf.cell(w, 6, "  |  ".join(contact_line_2), ln=True)
 
         # ── DIVIDER LINE ──
         pdf.set_draw_color(0, 0, 0)
@@ -89,7 +105,7 @@ RULES:
                 pdf.multi_cell(w, 6, "Sincerely,", align="L")
                 pdf.ln(6)
                 pdf.set_font("Helvetica", "B", 10)
-                pdf.multi_cell(w, 6, personal['name'], align="L")
+                pdf.multi_cell(w, 6, clean_text(personal.get("name")) or "Candidate Name", align="L")
                 pdf.set_font("Helvetica", "", 10)
                 break
             else:
